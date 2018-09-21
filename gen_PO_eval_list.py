@@ -83,24 +83,33 @@ def gen_HDN_eval_list():
     return HDN_eval_list
 
 def wrap_trtd(columns):
-    t = "<tr>"
+    t = "|"
     for s in columns:
-        t = t + "<td>" + s + "</td>"
-    t += "</tr>\n"
+        t = t + s + "|"
+    t += ">\n"
 
     return t
+
+    # t = "<tr>"
+    # for s in columns:
+    #     t = t + "<td>" + s + "</td>"
+    # t += "</tr>\n"
+    #
+    # return t
+
 
 def out_POH_eval_list(xPOH_eval_list):
     path = os.getenv("HOMEDRIVE", "None") + os.getenv("HOMEPATH", "None") + "/Dropbox/POG/"
     htmlpath = path + "POH_eval_list.html"
     f = open(htmlpath, mode="w", encoding="utf-8")
-    f.write('<table border="1" cellspacing="0" cellpadding="5" bordercolor="#333333">\n')
+    # f.write('<table border="1" cellspacing="0" cellpadding="5" bordercolor="#333333">\n')
+    f.write("|-|-|-|-|-|-|-|")
     f.write(wrap_trtd(["馬名", "オーナー", "性別", "指名順", "HDN1", "HDN2", "HDN3"]))
 
     for row in xPOH_eval_list:
         f.write(wrap_trtd([row[0], row[1], row[2], row[3], row[6], row[7], row[8]]))
 
-    f.write("</table>\n")
+    f.write("\n")
 
     f.close()
 
