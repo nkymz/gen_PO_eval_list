@@ -43,7 +43,9 @@ def gen_poh_eval_list(HDN_eval_list, uma_eval_list):
                  "Ｂhyouka_dirt":"3D", "Ｃhyouka_dirt":"2D", "Ｄhyouka_dirt":"1D", "Ｅhyouka_dirtsiba":"0D"}
     path = os.getenv("HOMEDRIVE", "None") + os.getenv("HOMEPATH", "None") + "/Dropbox/POG/"
     wbpath = (path + "PO_HorseEvalList.xlsx").replace("\\", "/")
+    wbbupath = (path + "PO_HorseEvalList_old.xlsx").replace("\\", "/")
     wb = openpyxl.load_workbook(wbpath)
+    wb.save(wbbupath)
     ws = wb["POHEvalList"]
     xlrow = 1
 
@@ -96,6 +98,7 @@ def gen_poh_eval_list(HDN_eval_list, uma_eval_list):
 
     xPOH_eval_list_all = [[cell.value for cell in row] for row in ws["A1:N" + str(xlrow - 1)]]
     return [row for row in xPOH_eval_list_all if row[5] != "HDN_eval_none" or row[10] != "UMA_eval_none"]
+
 
 def gen_uma_eval_list():
 
@@ -251,14 +254,14 @@ def out_poh_eval_list(xPOH_eval_list):
     f = open(htmlpath, mode="w", encoding="utf-8")
     f.write(HTML_HEAD)
     f.write('<table>\n')
-    f.write(wrap_trtd(["馬名", "オーナー", "性別", "順位", "H1", "H2", "H3", "UM"], "th"))
+    f.write(wrap_trtd(["馬名", "オーナー", "順位", "H1", "H2", "H3", "UM"], "th"))
     for row in xPOH_eval_list:
         horse_name = deco_horse(row[0], row[5], row[10], row[4])
         hdn_eval = []
         for i in range(3):
             hdn_eval.append(deco_hdn_eval(row[i + 6]))
         uma_eval = deco_uma_eval(str(row[11]))
-        f.write(wrap_trtd([horse_name, row[1], row[2], row[3], hdn_eval[0], hdn_eval[1], hdn_eval[2], uma_eval], "td"))
+        f.write(wrap_trtd([horse_name, row[1], row[2] + row[3], hdn_eval[0], hdn_eval[1], hdn_eval[2], uma_eval], "td"))
     f.write("\n")
 
     f.close()
@@ -271,14 +274,14 @@ def out_poh_eval_list_new(poh_eval_list_new):
     f.write(HTML_HEAD_NEW)
     f.write('<p> 全馬リストは<a href="https://nkymz.github.io/ppro_eval_list/">こちら</a>')
     f.write('<table>\n')
-    f.write(wrap_trtd(["馬名", "オーナー", "性別", "順位", "H1", "H2", "H3", "UM"], "th"))
+    f.write(wrap_trtd(["馬名", "オーナー", "順位", "H1", "H2", "H3", "UM"], "th"))
     for row in poh_eval_list_new:
         horse_name = deco_horse(row[0], "", "", row[4])
         hdn_eval = []
         for i in range(3):
             hdn_eval.append(deco_hdn_eval(row[i + 6]))
         uma_eval = deco_uma_eval(str(row[11]))
-        f.write(wrap_trtd([horse_name, row[1], row[2], row[3], hdn_eval[0], hdn_eval[1], hdn_eval[2], uma_eval], "td"))
+        f.write(wrap_trtd([horse_name, row[1], row[2] + row[3], hdn_eval[0], hdn_eval[1], hdn_eval[2], uma_eval], "td"))
     f.write("\n")
 
     f.close()
