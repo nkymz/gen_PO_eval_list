@@ -2,15 +2,42 @@
 
 import os
 import re
-import datetime
 import time
 
 import openpyxl
 import requests
 from bs4 import BeautifulSoup
-import pprint
 
-def gen_POH_eval_list(HDN_eval_list, uma_eval_list):
+HTML_HEAD = """
+<head>
+<link rel="stylesheet" type="text/css" href="style.css">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+"""
+
+HTML_HEAD_NEW = """
+<head>
+<style>
+table, th, td {
+  border-collapse: collapse;
+  border: 2px solid #ccc;
+  line-height: 1.5;
+}
+th,td {
+  padding: 4px;
+}
+th {
+  background-color: #888888;
+}
+td.center {
+  text-align: center;
+}
+</style>
+</head>
+"""
+
+
+def gen_poh_eval_list(HDN_eval_list, uma_eval_list):
     DICT_EVAL = {"Ｓhyouka_siba":"5T", "Ａhyouka_siba":"4T", "Ｂhyouka_siba":"3T", "Ｃhyouka_siba":"2T",
                  "Ｄhyouka_siba":"1T", "Ｅhyouka_siba":"0T", "Ｓhyouka_dirt":"5D", "Ａhyouka_dirt":"4D",
                  "Ｂhyouka_dirt":"3D", "Ｃhyouka_dirt":"2D", "Ｄhyouka_dirt":"1D", "Ｅhyouka_dirtsiba":"0D"}
@@ -128,8 +155,6 @@ def gen_uma_eval_list():
     return uma_eval_list
 
 
-
-
 def gen_HDN_eval_list():
 
     HDN_URL_1ST_HALF = "http://www.nikkankeiba.com/pog2018/hyouka/hyouka"
@@ -163,34 +188,108 @@ def gen_HDN_eval_list():
 
 
 def wrap_trtd(columns, tag_type):
-    begin_tag = "<" + tag_type + ">"
+    begin_tag_1sthalf = "<" + tag_type
     end_tag = "</" + tag_type + ">"
     t = "<tr>"
-    for s in columns:
-        t = t + begin_tag + s + end_tag
+    for i, s in enumerate(columns):
+        if i>= 2:
+            t = t + begin_tag_1sthalf + ' class="center">' + s + end_tag
+        else:
+            t = t + begin_tag_1sthalf + '>' + s + end_tag
     t += "</tr>\n"
 
     return t
 
 
-def out_POH_eval_list(xPOH_eval_list):
-    path = os.getenv("HOMEDRIVE", "None") + os.getenv("HOMEPATH", "None") + "/Dropbox/POG/"
-    htmlpath = path + "POH_eval_list.html"
+def deco_horse(string, status_hdn, status_uma, seal):
+    string = string if seal == "-" else "<s>" + string + "</s>"
+    if status_hdn == "HDN_eval_new" or status_uma == "UMA_eval_new":
+        string = '<span style="font-weight: 900; color:#FF0000;">' + string + ' new!</span>'
+
+    return string
+
+
+def deco_hdn_eval(hdn_eval):
+    if hdn_eval[1] == "T":
+        if hdn_eval[0] == "5":
+            s = '<span style="font-weight: 900; color:#FF0000;">' + hdn_eval[0] + '</span>'
+        elif hdn_eval[0] == "4":
+            s = '<span style="font-weight: 900; color:#0000FF;">' + hdn_eval[0] + '</span>'
+        elif hdn_eval[0] == "3":
+            s = '<span style="font-weight: 900;">' + hdn_eval[0] + '</span>'
+        else:
+            s = hdn_eval[0]
+    else:
+        if hdn_eval[0] == "5":
+            s = '<span style="font-weight: 900; color:#000000; background-color:#FF0000">' + hdn_eval[0] + '</span>'
+        elif hdn_eval[0] == "4":
+            s = '<span style="font-weight: 900; color:#000000; background-color:#0000FF;">' + hdn_eval[0] + '</span>'
+        elif hdn_eval[0] == "3":
+            s = '<span style="font-weight: 900; color:#FFFFFF; background-color:#000000;">' + hdn_eval[0] + '</span>'
+        else:
+            s = '<span style="color:#FFFFFF; background-color:#000000;">' + hdn_eval[0] + '</span>'
+
+    return s
+
+
+def deco_uma_eval(uma_eval):
+    if uma_eval in "9":
+        s = '<span style="font-weight: 900; color:#FF0000;">' + uma_eval + '</span>'
+    elif uma_eval in "78":
+        s = '<span style="font-weight: 900; color:#0000FF;">' + uma_eval + '</span>'
+    elif uma_eval in "6":
+        s = '<span style="font-weight: 900;">' + uma_eval + '</span>'
+    else:
+        s = uma_eval
+
+    return s
+
+
+def out_poh_eval_list(xPOH_eval_list):
+    path = os.getenv("HOMEDRIVE", "None") + os.getenv("HOMEPATH", "None") + "/Dropbox/POG/ppro_eval_list/"
+    htmlpath = path + "index.html"
     f = open(htmlpath, mode="w", encoding="utf-8")
-    f.write('<table border="1" cellspacing="0" cellpadding="5" bordercolor="#333333">\n')
-    f.write(wrap_trtd(["馬名", "オーナー", "性別", "指名順", "HDN1", "HDN2", "HDN3", "UMA"], "th"))
+    f.write(HTML_HEAD)
+    f.write('<table>\n')
+    f.write(wrap_trtd(["馬名", "オーナー", "性別", "順位", "H1", "H2", "H3", "UM"], "th"))
     for row in xPOH_eval_list:
-        horse_name = row[0] if row[4] == "-" else "<s>" + row[0] + "</s>"
-        f.write(wrap_trtd([horse_name, row[1], row[2], row[3], row[6], row[7], row[8], str(row[11])], "td"))
+        horse_name = deco_horse(row[0], row[5], row[10], row[4])
+        hdn_eval = []
+        for i in range(3):
+            hdn_eval.append(deco_hdn_eval(row[i + 6]))
+        uma_eval = deco_uma_eval(str(row[11]))
+        f.write(wrap_trtd([horse_name, row[1], row[2], row[3], hdn_eval[0], hdn_eval[1], hdn_eval[2], uma_eval], "td"))
+    f.write("\n")
+
+    f.close()
+
+
+def out_poh_eval_list_new(poh_eval_list_new):
+    path = os.getenv("HOMEDRIVE", "None") + os.getenv("HOMEPATH", "None") + "/Dropbox/POG/"
+    htmlpath = path + "ppro_eval_list_new.html"
+    f = open(htmlpath, mode="w", encoding="utf-8")
+    f.write(HTML_HEAD_NEW)
+    f.write('<p> 全馬リストは<a href="https://nkymz.github.io/ppro_eval_list/">こちら</a>')
+    f.write('<table>\n')
+    f.write(wrap_trtd(["馬名", "オーナー", "性別", "順位", "H1", "H2", "H3", "UM"], "th"))
+    for row in poh_eval_list_new:
+        horse_name = deco_horse(row[0], "", "", row[4])
+        hdn_eval = []
+        for i in range(3):
+            hdn_eval.append(deco_hdn_eval(row[i + 6]))
+        uma_eval = deco_uma_eval(str(row[11]))
+        f.write(wrap_trtd([horse_name, row[1], row[2], row[3], hdn_eval[0], hdn_eval[1], hdn_eval[2], uma_eval], "td"))
     f.write("\n")
 
     f.close()
 
 
 if __name__ == "__main__":
-    xPOH_eval_list = gen_POH_eval_list(gen_HDN_eval_list(), gen_uma_eval_list())
+    xPOH_eval_list = gen_poh_eval_list(gen_HDN_eval_list(), gen_uma_eval_list())
     xPOH_eval_list.sort(key=lambda x:x[13], reverse=True)
-    out_POH_eval_list(xPOH_eval_list)
+    out_poh_eval_list(xPOH_eval_list)
+    poh_eval_list_new = [r for r in xPOH_eval_list if r[5] == "HDN_eval_new" or r[10] == "UMA_eval_new"]
+    out_poh_eval_list_new(poh_eval_list_new)
 
 
 
