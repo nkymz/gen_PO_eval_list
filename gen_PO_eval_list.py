@@ -265,7 +265,7 @@ def out_poh_eval_list(xPOH_eval_list):
             hdn_eval.append(deco_hdn_eval(row[i + 6]))
         uma_eval = deco_uma_eval(str(row[11]))
         f.write(wrap_trtd([horse_name, row[1], row[2] + row[3], hdn_eval[0], hdn_eval[1], hdn_eval[2], uma_eval], "td"))
-    f.write("\n")
+    f.write("</table>\n")
 
     f.close()
 
@@ -285,7 +285,7 @@ def out_poh_eval_list_new(poh_eval_list_new):
             hdn_eval.append(deco_hdn_eval(row[i + 6]))
         uma_eval = deco_uma_eval(str(row[11]))
         f.write(wrap_trtd([horse_name, row[1], row[2] + row[3], hdn_eval[0], hdn_eval[1], hdn_eval[2], uma_eval], "td"))
-    f.write("\n")
+    f.write("</table>\n")
 
     f.close()
 
