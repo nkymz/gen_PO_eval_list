@@ -69,6 +69,8 @@ def gen_poh_eval_list(HDN_eval_list, uma_eval_list):
                 ws.cell(row=xlrow,column=7+i).value = myeval
                 score += int(myeval[0]) * 7
             ws.cell(row=xlrow, column=10).value = score
+            uma_score = ws.cell(row=xlrow, column=13).value
+            ws.cell(row=xlrow, column=14).value = score * 2 if uma_score == "" else score + uma_score
             ws.cell(row=xlrow, column=6).value = "HDN_eval_new"
             break
 
@@ -89,7 +91,8 @@ def gen_poh_eval_list(HDN_eval_list, uma_eval_list):
                 continue
             ws.cell(row=xlrow, column=12).value = row[1]
             ws.cell(row=xlrow, column=13).value = row[2]
-            ws.cell(row=xlrow, column=14).value = row[2] + ws.cell(row=xlrow, column=10).value
+            hdn_score = ws.cell(row=xlrow, column=10).value
+            ws.cell(row=xlrow, column=14).value = row[2] * 2 if hdn_score == "" else row[2] + hdn_score
             ws.cell(row=xlrow, column=11).value = "UMA_eval_new"
             break
         xlrow += 1
