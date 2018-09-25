@@ -14,7 +14,6 @@ HTML_HEAD = """
 <meta name="viewport" content="width=device-width,initial-scale=1">
 </head>
 """
-
 HTML_HEAD_NEW = """
 <head>
 <style>
@@ -35,12 +34,21 @@ td.center {
 </style>
 </head>
 """
+DICT_EVAL = {"Ｓhyouka_siba": "5T", "Ａhyouka_siba": "4T", "Ｂhyouka_siba": "3T", "Ｃhyouka_siba": "2T",
+             "Ｄhyouka_siba": "1T", "Ｅhyouka_siba": "0T", "Ｓhyouka_dirt": "5D", "Ａhyouka_dirt": "4D",
+             "Ｂhyouka_dirt": "3D", "Ｃhyouka_dirt": "2D", "Ｄhyouka_dirt": "1D", "Ｅhyouka_dirtsiba": "0D"}
+HDN_URL_1ST_HALF = "http://www.nikkankeiba.com/pog2018/hyouka/hyouka"
 
 
-def gen_poh_eval_list(HDN_eval_list, uma_eval_list):
-    DICT_EVAL = {"Ｓhyouka_siba":"5T", "Ａhyouka_siba":"4T", "Ｂhyouka_siba":"3T", "Ｃhyouka_siba":"2T",
-                 "Ｄhyouka_siba":"1T", "Ｅhyouka_siba":"0T", "Ｓhyouka_dirt":"5D", "Ａhyouka_dirt":"4D",
-                 "Ｂhyouka_dirt":"3D", "Ｃhyouka_dirt":"2D", "Ｄhyouka_dirt":"1D", "Ｅhyouka_dirtsiba":"0D"}
+def main():
+    poh_eval_list = gen_poh_eval_list(gen_hdn_eval_list(), gen_uma_eval_list())
+    poh_eval_list.sort(key=lambda x: x[13], reverse=True)
+    out_poh_eval_list(poh_eval_list)
+    poh_eval_list_new = [r for r in poh_eval_list if r[5] == "HDN_eval_new" or r[10] == "UMA_eval_new"]
+    out_poh_eval_list_new(poh_eval_list_new)
+
+
+def gen_poh_eval_list(hdn_eval_list, uma_eval_list):
     path = os.getenv("HOMEDRIVE", "None") + os.getenv("HOMEPATH", "None") + "/Dropbox/POG/"
     wbpath = (path + "PO_HorseEvalList.xlsx").replace("\\", "/")
     wbbupath = (path + "PO_HorseEvalList_old.xlsx").replace("\\", "/")
@@ -60,13 +68,13 @@ def gen_poh_eval_list(HDN_eval_list, uma_eval_list):
             xlrow += 1
             continue
 
-        for row in HDN_eval_list:
+        for row in hdn_eval_list:
             if horse_name != row[4]:
                 continue
             score = 0
             for i in range(3):
                 myeval = DICT_EVAL[row[i + 10] + row[i + 13]]
-                ws.cell(row=xlrow,column=7+i).value = myeval
+                ws.cell(row=xlrow, column=7+i).value = myeval
                 score += int(myeval[0]) * 7
             ws.cell(row=xlrow, column=10).value = score
             uma_score = ws.cell(row=xlrow, column=13).value
@@ -99,13 +107,14 @@ def gen_poh_eval_list(HDN_eval_list, uma_eval_list):
 
     wb.save(wbpath)
 
-    xPOH_eval_list_all = [[cell.value for cell in row] for row in ws["A1:N" + str(xlrow - 1)]]
-    return [row for row in xPOH_eval_list_all if row[5] != "HDN_eval_none" or row[10] != "UMA_eval_none"]
+    poh_eval_list_all = [[cell.value for cell in row] for row in ws["A1:N" + str(xlrow - 1)]]
+    return [row for row in poh_eval_list_all if row[5] != "HDN_eval_none" or row[10] != "UMA_eval_none"]
 
 
 def gen_uma_eval_list():
 
-    uma_url_1st_half = "http://umakeiba.com/post/category/%E5%84%AA%E9%A6%AC2%E6%AD%B3%E9%A6%AC%E3%83%81%E3%82%A7%E3%83%83%E3%82%AF/page/"
+    uma_url_1st_half = "http://umakeiba.com/post/category/" \
+                       "%E5%84%AA%E9%A6%AC2%E6%AD%B3%E9%A6%AC%E3%83%81%E3%82%A7%E3%83%83%E3%82%AF/page/"
 
     uma_eval_list = []
 
@@ -142,7 +151,7 @@ def gen_uma_eval_list():
 
             if soup.find_all("strong")[1].string[-1] == "点":
                 eval_horses = [strong_tag.string for k, strong_tag in enumerate(soup.find_all("strong"))
-                              if k % 2 == 0]
+                               if k % 2 == 0]
                 eval_stars = [int(strong_tag.string[-2]) for k, strong_tag in enumerate(soup.find_all("strong"))
                               if k % 2 == 1]
             else:
@@ -161,12 +170,11 @@ def gen_uma_eval_list():
     return uma_eval_list
 
 
-def gen_HDN_eval_list():
+def gen_hdn_eval_list():
 
-    HDN_URL_1ST_HALF = "http://www.nikkankeiba.com/pog2018/hyouka/hyouka"
     url_2nd_half = ["01.html", "02.html", "03.html", "04.html", "05.html", "06.html", "07.html", "08.html,"
                     "09.html", "10.html", "11.html", "12.html"]
-    HDN_eval_list = []
+    hdn_eval_list = []
 
     for s in url_2nd_half:
 
@@ -188,9 +196,9 @@ def gen_HDN_eval_list():
             for j in range(3):
                 eval_row.append(myrow.find_all("td")[j + 10].get("id"))
 
-            HDN_eval_list.append(eval_row)
+            hdn_eval_list.append(eval_row)
 
-    return HDN_eval_list
+    return hdn_eval_list
 
 
 def wrap_trtd(columns, tag_type):
@@ -198,7 +206,7 @@ def wrap_trtd(columns, tag_type):
     end_tag = "</" + tag_type + ">"
     t = "<tr>"
     for i, s in enumerate(columns):
-        if i>= 2:
+        if i >= 2:
             t = t + begin_tag_1sthalf + ' class="center">' + s + end_tag
         else:
             t = t + begin_tag_1sthalf + '>' + s + end_tag
@@ -251,14 +259,14 @@ def deco_uma_eval(uma_eval):
     return s
 
 
-def out_poh_eval_list(xPOH_eval_list):
+def out_poh_eval_list(poh_eval_list):
     path = os.getenv("HOMEDRIVE", "None") + os.getenv("HOMEPATH", "None") + "/Dropbox/POG/ppro_eval_list/"
     htmlpath = path + "index.html"
     f = open(htmlpath, mode="w", encoding="utf-8")
     f.write(HTML_HEAD)
     f.write('<table>\n')
     f.write(wrap_trtd(["馬名", "オーナー", "順位", "H1", "H2", "H3", "UM"], "th"))
-    for row in xPOH_eval_list:
+    for row in poh_eval_list:
         horse_name = deco_horse(row[0], row[5], row[10], row[4])
         hdn_eval = []
         for i in range(3):
@@ -291,13 +299,4 @@ def out_poh_eval_list_new(poh_eval_list_new):
 
 
 if __name__ == "__main__":
-    xPOH_eval_list = gen_poh_eval_list(gen_HDN_eval_list(), gen_uma_eval_list())
-    xPOH_eval_list.sort(key=lambda x:x[13], reverse=True)
-    out_poh_eval_list(xPOH_eval_list)
-    poh_eval_list_new = [r for r in xPOH_eval_list if r[5] == "HDN_eval_new" or r[10] == "UMA_eval_new"]
-    out_poh_eval_list_new(poh_eval_list_new)
-
-
-
-
-
+    main()
