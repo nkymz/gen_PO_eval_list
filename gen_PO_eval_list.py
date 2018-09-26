@@ -78,7 +78,7 @@ def gen_poh_eval_list(hdn_eval_list, uma_eval_list):
                 score += int(myeval[0]) * 7
             ws.cell(row=xlrow, column=10).value = score
             uma_score = ws.cell(row=xlrow, column=13).value
-            ws.cell(row=xlrow, column=14).value = score * 2 if uma_score == "" else score + uma_score
+            ws.cell(row=xlrow, column=14).value = score * 2 if uma_score is None else score + uma_score
             ws.cell(row=xlrow, column=6).value = "HDN_eval_new"
             break
 
@@ -100,7 +100,7 @@ def gen_poh_eval_list(hdn_eval_list, uma_eval_list):
             ws.cell(row=xlrow, column=12).value = row[1]
             ws.cell(row=xlrow, column=13).value = row[2]
             hdn_score = ws.cell(row=xlrow, column=10).value
-            ws.cell(row=xlrow, column=14).value = row[2] * 2 if hdn_score == "" else row[2] + hdn_score
+            ws.cell(row=xlrow, column=14).value = row[2] * 2 if hdn_score is None else row[2] + hdn_score
             ws.cell(row=xlrow, column=11).value = "UMA_eval_new"
             break
         xlrow += 1
@@ -270,8 +270,11 @@ def out_poh_eval_list(poh_eval_list):
         horse_name = deco_horse(row[0], row[5], row[10], row[4])
         hdn_eval = []
         for i in range(3):
-            hdn_eval.append(deco_hdn_eval(row[i + 6]))
-        uma_eval = deco_uma_eval(str(row[11]))
+            if row[i + 6] != "-":
+                hdn_eval.append(deco_hdn_eval(row[i + 6]))
+            else:
+                hdn_eval.append("-")
+        uma_eval = deco_uma_eval(str(row[11])) if row[11] != "-" else "-"
         f.write(wrap_trtd([horse_name, row[1], row[2] + row[3], hdn_eval[0], hdn_eval[1], hdn_eval[2], uma_eval], "td"))
     f.write("</table>\n")
 
@@ -290,8 +293,11 @@ def out_poh_eval_list_new(poh_eval_list_new):
         horse_name = deco_horse(row[0], "", "", row[4])
         hdn_eval = []
         for i in range(3):
-            hdn_eval.append(deco_hdn_eval(row[i + 6]))
-        uma_eval = deco_uma_eval(str(row[11]))
+            if row[i + 6] != "-":
+                hdn_eval.append(deco_hdn_eval(row[i + 6]))
+            else:
+                hdn_eval.append("-")
+        uma_eval = deco_uma_eval(str(row[11])) if row[11] != "-" else "-"
         f.write(wrap_trtd([horse_name, row[1], row[2] + row[3], hdn_eval[0], hdn_eval[1], hdn_eval[2], uma_eval], "td"))
     f.write("</table>\n")
 
