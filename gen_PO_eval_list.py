@@ -172,7 +172,7 @@ def gen_uma_eval_list():
 
 def gen_hdn_eval_list():
 
-    url_2nd_half = ["01.html", "02.html", "03.html", "04.html", "05.html", "06.html", "07.html", "08.html,"
+    url_2nd_half = ["01.html", "02.html", "03.html", "04.html", "05.html", "06.html", "07.html", "08.html",
                     "09.html", "10.html", "11.html", "12.html"]
     hdn_eval_list = []
 
